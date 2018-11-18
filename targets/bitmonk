@@ -1,0 +1,55 @@
+#!/bin/sh -e
+# Copyright (c) 2016 The crouton Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+REQUIRES='core'
+DESCRIPTION='Bitmonk things.'
+HOSTBIN='startcli'
+CHROOTBIN='croutonpowerd'
+. "${TARGETSDIR:="$PWD"}/common"
+
+### Append to prepare.sh:
+install dbus openssh-client kbd
+
+TIPS="$TIPS
+You can start a shell in a new VT via the startcli host command: sudo startcli
+"
+
+# bitmonk stuff
+# debuntu specific
+sudo apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common \
+    gnupg \
+
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+
+apt-get update
+
+add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/debian \
+   $(lsb_release -cs) \
+   stable"
+
+curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+
+apt-add-repository -y ppa:ansible/ansible
+
+apt-get update
+
+apt-get install -y htop tmux python3 golang code docker-ce ansible
+
+CHEFDK_VERSION=3.5.13
+CHEFDK_PATCHLEVEL=1
+CHEFDK_FILENAME=chefdk_${CHEFDK_VERSION}-${CHEFDK_PATCHLEVEL}_amd64.deb
+CHEFDK_URL=https://packages.chef.io/files/current/chefdk/${CHEFDK_VERSION}/debian/9/${CHEFDK_FILENAME}
+curl -O $CHEFDK_URL
+dpkg -i $CHEFDK_FILENAME
+
+git config --global user.email "justin.alan.ryan@gmail.com"
+git config --global user.name "Justin Alan Ryan"
+
